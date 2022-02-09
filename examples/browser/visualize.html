@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <script src="/pffft/pffft.simd.js"></script>
+
+  <script type="text/javascript">
+
+  	pffft_simd().then(async function(Module) {
+
+  		//fetch 
+		let url = window.location.origin + "/181425__serylis__guitar-chord.raw"
+		let blob = await fetch(url).then(r => r.blob());
+		let buffer = await blob.arrayBuffer();
+		let audio_samples = new Float32Array(buffer);
+
+		let audio_block_size = 1024;
+		let bytes_per_element = 4;
+		let audio_step_size = 128;
+		let sample_rate = 44100.0;//Hz
+
+		var stft_magnitudes = new Array();
+		
+		let pffft_runner = Module._pffft_runner_new(audio_block_size,bytes_per_element);
+	    console.log("New PFFFT runner created: ");
+
+	    // Get data byte size, allocate memory on Emscripten heap, and get pointer
+		var nDataBytes = audio_block_size * bytes_per_element;
+		var dataPtr = Module._malloc(nDataBytes);
+		// Copy data to Emscripten heap (directly accessed from Module.HEAPU8)
+		var dataHeap = new Uint8Array(Module.HEAPU8.buffer, dataPtr, nDataBytes);
+
+	    for(var audio_sample_index = 0 ; audio_sample_index < audio_samples.length - audio_block_size ; audio_sample_index  += audio_step_size){
+
+    		const audio_block = audio_samples.slice(audio_sample_index,audio_sample_index+audio_block_size);
+
+		    dataHeap.set(new Uint8Array(audio_block.buffer));
+
+	   		// Window + forwar FFT for each block
+	    	Module._pffft_runner_apply(pffft_runner,dataHeap.byteOffset);
+
+	    	var fft_result = new Float32Array(dataHeap.buffer, dataHeap.byteOffset, audio_block.length);
+
+	    	//calculate magnitudes and accumulate results
+	    	var magnitudes = new Array(audio_block_size/2);
+		    for (var i = 0; i < audio_block_size; i+=2) {
+		    	magnitudes[Math.floor(i/2)] = fft_result[i] * fft_result[i] + fft_result[i+1] * fft_result[i+1];
+			}
+			stft_magnitudes.push(magnitudes);
+		}
+
+		Module._free(dataPtr);
+
+	    Module._pffft_runner_destroy(pffft_runner);
+	    console.log("PFFFT runner destroyed");
+
+		drawFFTOnCanvas(stft_magnitudes);
+  	});
+
+
+
+  	function drawFFTOnCanvas(stft_magnitudes){
+
+  		var canvas = document.getElementById('canvas');
+		var ctx = canvas.getContext('2d');
+		canvas.width = stft_magnitudes.length;
+		canvas.height = stft_magnitudes[0].length;
+
+		const imageData = ctx.createImageData(stft_magnitudes.length,stft_magnitudes[0].length);
+	    const data = imageData.data;
+
+	    var max_value = 0;
+	    var min_value = 10000;
+	    for (var t = 0; t < stft_magnitudes.length; t ++) {
+	    	for (var f = 0; f < stft_magnitudes[t].length; f ++) {
+	    		stft_magnitudes[t][f] = Math.log(stft_magnitudes[t][f]);
+	    		max_value = Math.max(stft_magnitudes[t][f],max_value);
+	    		min_value = Math.min(stft_magnitudes[t][f],min_value);
+	    	}
+	    }
+
+	    for (let i = 0; i < imageData.data.length; i += 4) {
+
+	    	let x = (i / 4) % imageData.width;
+      		let y = ~~(i / 4 / imageData.width);
+
+      		let t = x;
+      		let f = Math.floor(imageData.height - y - 1);
+      		
+
+      		let gray_value = ~~( (stft_magnitudes[t][f] - min_value) / (max_value - min_value) * 255);
+
+
+			  // Modify pixel data
+			  imageData.data[i + 0] = gray_value;  // R value
+			  imageData.data[i + 1] = gray_value;    // G value
+			  imageData.data[i + 2] = gray_value;  // B value
+			  imageData.data[i + 3] = 255;  // A value
+		}
+
+	    ctx.putImageData(imageData, 0, 0);
+
+
+  	}
+  </script>
+</head>
+<body>
+
+	<h1>STFT visualization</h1>
+	<p>
+		A short audio fragment is downloaded and sliced into audio blocks. FFT magnitudes are calculated for each block with the SIMD WASM version of <b>pffft</b>. Note that a Hamming window is applied automatically by default. Next, magnitudes are visualized using a spectrogram placed on a <tt>canvas</tt> element. Time is on the horizontal axis and frequency (Hz) on the vertical.</p>
+	<p>
+		Note that <a href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a> needs to be configured correctly to make this demo work.  A working configuration sets these headers: <tt>'Cross-Origin-Embedder-Policy' => 'require-corp'</tt> and <tt>'Cross-Origin-Opener-Policy' => 'same-origin'</tt>.
+	</p>
+	<canvas id="canvas"></canvas><br>
+	<br>
+	<audio src="181425__serylis__guitar-chord.wav" controls></audio>
+
+</body>

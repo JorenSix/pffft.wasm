@@ -1,0 +1,37 @@
+h1. PFFFT on WebAssembly
+--------------------
+
+"PFFFT":https://bitbucket.org/jpommier/pffft/src/master/README.md is a small, pretty fast FFT library with a BSD-like license.  This repository make that library available in "WebAssembly":https://webassembly.org projects. Two builds are provided a "SIMD":https://v8.dev/features/simd build and on without SIMD which is compatible with more WebAssembly runtimes.
+
+
+h2. Why PFFFT on WebAssembly?
+
+PFFFT on WebAssembly provides a high  
+
+
+h2. Limitations
+
+
+"CORS":https://en.wikipedia.org/wiki/Cross-origin_resource_sharing needs to be configured correctly on your web server to allow browsers to execute WebAssembly modules. A working configuration sets these headers: <tt>'Cross-Origin-Embedder-Policy' => 'require-corp'</tt> and <tt>'Cross-Origin-Opener-Policy' => 'same-origin'</tt>. This makes it less easy to install than pure 
+
+
+h2. Benchmark
+
+"FFT.js":https://github.com/auroranockert/fft.js 
+
+
+
+!./media/pffft_benchmark.png(PFFFT benchmark)!
+
+
+
+
+!./media/stft.png(STFT canvas image)!
+
+
+
+h2. Credits
+
+* "PFFFT":https://bitbucket.org/jpommier/pffft/src/default/  a pretty fast FFT library. BSD license
+
+PFFFT on WebAssembly by Joren Six at IPEM, Ghent University.

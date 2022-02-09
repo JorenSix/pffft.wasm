@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <script src="/pffft/pffft.simd.js"></script>
+
+  <script src="/pffft/pffft.js"></script>
+
+  <script src="js/fft.js"></script>
+  <script src="/js/chart.js"></script>
+
+  <script type="text/javascript">
+    var verbose = true;
+    const audio_block_size = 1024;
+    const bytes_per_element = 4;
+
+    var pffft_simd_module = null;
+    var pffft_no_simd_module = null;
+
+
+    function benchmark_pffft(pffft_module, element_id){
+      console.time(element_id);
+
+      const t0 = performance.now();
+
+      var pffft_runner = pffft_module._pffft_runner_new(audio_block_size,bytes_per_element);
+
+      var audio_data = tone(audio_block_size);
+
+      var dataPtr = pffft_module._malloc(nDataBytes);
+      var dataHeap = new Uint8Array(pffft_module.HEAPU8.buffer, dataPtr, nDataBytes);
+
+      for(var i = 0 ; i < 100_000 ; i++){
+        // Get data byte size, allocate memory on Emscripten heap, and get pointer
+        var nDataBytes = audio_data.length * audio_data.BYTES_PER_ELEMENT;
+        
+        // Copy data to Emscripten heap (directly accessed from Module.HEAPU8)
+        dataHeap.set(new Uint8Array(audio_data.buffer));
+
+        // Call function and get result
+        pffft_module._pffft_runner_apply(pffft_runner,dataHeap.byteOffset);
+
+        var fft_result = new Float32Array(dataHeap.buffer, dataHeap.byteOffset, audio_data.length);
+      }
+      pffft_module._free(dataPtr);
+      pffft_module._pffft_runner_destroy(pffft_runner);
+
+      const t1 = performance.now();
+      let ms = t1 - t0;
+      console.timeEnd(element_id);
+
+      return ms;
+    }
+
+    function benchmark_fftjs(element_id){
+      console.time(element_id);
+      const t0 = performance.now();
+
+      const f = new FFTJS(audio_block_size);
+
+      var audio_data = tone(audio_block_size);
+
+      const out = f.createComplexArray();
+      for(var i = 0 ; i < 100_000 ; i++){
+        f.realTransform(out, audio_data);
+      }
+      
+      console.timeEnd("fft.js benchmark");
+      const t1 = performance.now();
+      let ms = t1 - t0;
+      return ms;
+    }
+
+    function test_fftjs(){
+      const f = new FFTJS(audio_block_size);
+
+      var audio_data = tone(audio_block_size);
+
+      const out = f.createComplexArray();
+      f.realTransform(out, audio_data);
+
+      console.log(out);
+
+      for (var i = 0; i < audio_block_size; i+=2) {
+        var hz = Math.round(48000.0 / 512.0  * i / 2.0);
+        console.log("#",i,hz,"Hz",out[i] * out[i] + out[i+1] * out[i+1]);
+      }
+    }
+
+
+    function tone(audio_block_size){
+      var sampleRate = 48000.0;
+      var frequency = 4800.0;
+      var amplitude = 0.8;
+      var twoPiF = 2 * Math.PI * frequency;
+      var buffer = new Float32Array(audio_block_size);
+      for (var sample = 0; sample < audio_block_size; sample++) {
+        var time = sample / sampleRate;
+        buffer[sample] = amplitude * Math.sin(twoPiF * time);
+      }
+      return buffer;
+    }
+
+    function test_pffft(Module){
+
+        var pffft_runner = Module._pffft_runner_new(audio_block_size,bytes_per_element);
+        if(verbose) console.log("New PFFFT runner created: ", pffft_runner);
+
+        // Create example data of a 440Hz tone at 48kHz to test the FFT
+        var audio_data = tone(audio_block_size);
+
+        // Get data byte size, allocate memory on Emscripten heap, and get pointer
+        var nDataBytes = audio_data.length * audio_data.BYTES_PER_ELEMENT;
+        var dataPtr = Module._malloc(nDataBytes);
+
+        // Copy data to Emscripten heap (directly accessed from Module.HEAPU8)
+        var dataHeap = new Uint8Array(Module.HEAPU8.buffer, dataPtr, nDataBytes);
+        dataHeap.set(new Uint8Array(audio_data.buffer));
+
+        // Call function and get result
+        Module._pffft_runner_apply(pffft_runner,dataHeap.byteOffset);
+
+        var fft_result = new Float32Array(dataHeap.buffer, dataHeap.byteOffset, audio_data.length);
+
+        for (var i = 0; i < audio_block_size; i+=2) {
+          var hz = Math.round(48000.0 / 512.0  * i / 2.0);
+          console.log("#",i,hz,"Hz",fft_result[i] * fft_result[i] + fft_result[i+1] * fft_result[i+1]);
+        }
+
+        Module._free(dataPtr);
+
+        Module._pffft_runner_destroy(pffft_runner);
+        if(verbose) console.log("PFFFT runner destroyed");
+    }
+
+    pffft_simd().then(async function(Module) {
+        if(verbose) console.log("SIMD PFFFT Module initialized");
+        pffft_simd_module = Module;
+    });
+
+    pffft().then(async function(Module) {
+      if(verbose) console.log("PFFFT Module initialized");
+       pffft_no_simd_module = Module;
+    });
+
+    function benchmark(){
+      let simd = benchmark_pffft(pffft_simd_module,'pffft_simd');
+      let no_simd = benchmark_pffft(pffft_no_simd_module,'pffft_no_simd')
+      let fftjs = benchmark_fftjs('fftjs')
+
+      const data = chart.data;
+      if (data.datasets.length > 0) {
+        data.labels.push("Run " +  (data.labels.length + 1));
+
+        
+        data.datasets[0].data.push(simd);
+        data.datasets[1].data.push(no_simd);
+        data.datasets[2].data.push(fftjs);
+
+        chart.update();
+      }
+    }
+
+  </script>
+</head>
+<body>
+
+  <h1>PFFFT benchmark</h1>
+
+  <p>
+  Compare the performance of the SIMD and non SIMD versions of WASM PFFFT. A pure javascript FFT library (FFT.js) severves as a baseline. The benchmark does a real forward transform of 1024 samples for 100k times. This benchmark is especially relevant for audio applications. 
+  </p>
+
+  <p>
+    Note that <a href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a> needs to be configured correctly to make this demo work.  A working configuration sets these headers: <tt>'Cross-Origin-Embedder-Policy' => 'require-corp'</tt> and <tt>'Cross-Origin-Opener-Policy' => 'same-origin'</tt>. Additionally a browser is needed with <a href="https://v8.dev/features/simd">SIMD WASM support</a>.
+  </p>
+
+  <p>
+  <button onclick="benchmark()" >Benchmark FFTs</button>
+  </p>
+
+
+   <canvas id="myChart" width="400" height="200" style="max-height: 60vh;"></canvas>
+
+      <script>
+      const ctx = document.getElementById('myChart').getContext('2d');
+      const chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: [],
+              datasets: [{
+                  label: 'SIMD PFFT',
+                  data: [],
+                  backgroundColor: [ '#4dc9f6']
+              },{
+                  label: 'NO SIMD PFFT',
+                  data: [],
+                  backgroundColor: ['#f67019' ]
+              },{
+                  label: 'FFT.js',
+                  data: [],
+                  backgroundColor: [ '#537bc4']
+              }]
+          },
+          options: {
+            indexAxis: 'x',
+              scales: {
+                  y: {
+
+                      title: {display: true, text: "Time (ms)"}
+                  }
+              }
+          }
+      });
+      </script>
+</body>
+</html>
