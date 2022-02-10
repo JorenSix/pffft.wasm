@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <title></title>
-  <script src="/pffft/pffft.simd.js"></script>
+  <script src="pffft/pffft.simd.js"></script>
 
   <script type="text/javascript">
 
   	pffft_simd().then(async function(Module) {
 
   		//fetch 
-		let url = window.location.origin + "/181425__serylis__guitar-chord.raw"
+  	let path = window.location.pathname.replace("visualize.html","181425__serylis__guitar-chord.raw");
+		let url = window.location.origin + path;
 		let blob = await fetch(url).then(r => r.blob());
 		let buffer = await blob.arrayBuffer();
 		let audio_samples = new Float32Array(buffer);

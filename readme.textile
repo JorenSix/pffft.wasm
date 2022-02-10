@@ -2,17 +2,21 @@ h1. PFFFT.WASM
 
 "PFFFT":https://bitbucket.org/jpommier/pffft/src/master/README.md is a small, pretty fast FFT library with a BSD-like license.  This repository make that library available in browsers and Node.js by using "WebAssembly":https://webassembly.org. Two builds are provided a "SIMD":https://v8.dev/features/simd build and on without SIMD which is slower but compatible with more WebAssembly runtimes.
 
-This repository contains
+This repository contains:
 
-* @build@ 
-* @examples@ 
-* @media@ a couple of screenshots 
-* @src@ 
+* @build@ two builds of PFFFT.WASM one with SIMD one without SIMD instructions.
+* @examples@ show how to use PFFFT.WASM
+** @browser@ 
+*** @visualize.html@ 
+*** @benchmark.html@ 
+** @node@ shows how to call PFFFT.WASM from a Node.js environment.
+* @media@ a couple of screenshots.
+* @src@ The slightly modified source code of the original PFFFT library. The modifications change some @ifdefs@ to enable SIMD compilation with emscripten. The runner automatically windows incoming data and exposes the functionality to the WebAssebmy side. 
 
 
 h2. Why PFFFT.WASM?
 
-PFFFT on WebAssembly provides a high performance, small FFT library which can be used in browsers or on Node.js. It is ideally suited for frequency analysis of a lot of audio in the browser. 
+PFFFT on WebAssembly provides a high performance, small FFT library which can be used in browsers or on Node.js. It is ideally suited for frequency analysis of lots of data in the browser.
 
 This project also serves as way for me to learn about __SIMD and WebAssembly__. PFFFT.WASM is one of the more simple projects where SIMD makes an actual difference. See the benchmarks below for more info.
 
@@ -21,14 +25,15 @@ This project also serves as way for me to learn about __SIMD and WebAssembly__. 
 <small>Fig: An STFT calculated with PFFFT.WASM</small>
 
 
-
 h2. Benchmark
 
 To see the difference between the SIMD version and the one without there is a benchmark example.  The pure Javascript FFT library "FFT.js":https://github.com/auroranockert/fft.js is used as a baseline.
 
 
+
+
 !./media/pffft_benchmark.png(PFFFT benchmark)!
-<small>Fig: benchmarks on an M1 Apple processor</small>
+<small>Fig: benchmarks on an Apple M1 Pro Chip.</small>
 
 
 h2. Limitations
