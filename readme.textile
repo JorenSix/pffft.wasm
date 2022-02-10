@@ -7,8 +7,8 @@ This repository contains:
 * @build@ two builds of PFFFT.WASM one with SIMD one without SIMD instructions.
 * @examples@ show how to use PFFFT.WASM
 ** @browser@ 
-*** @visualize.html@ 
-*** @benchmark.html@ 
+*** @visualize.html@ Shows how to calculate an STFT and visualize the result on a Canvas element. Try the "PFFFT.WASM visualization":https://0110.be/l/pffft_viz 
+*** @benchmark.html@ Benchmarks PFFFT.WASM by analysing a 1024 sample window 100k times. Run the "PFFFT.WASM benchmark"https://0110.be/l/pffft_benchmark to see the difference between the SIMD and non SIMD version on your system.
 ** @node@ shows how to call PFFFT.WASM from a Node.js environment.
 * @media@ a couple of screenshots.
 * @src@ The slightly modified source code of the original PFFFT library. The modifications change some @ifdefs@ to enable SIMD compilation with emscripten. The runner automatically windows incoming data and exposes the functionality to the WebAssebmy side. 
