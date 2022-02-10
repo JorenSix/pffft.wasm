@@ -1,4 +1,4 @@
-h1. pffft.wasm a small, fast FFT library for browser and node
+h1. pffft.wasm: an FFT library powered by WebAssembly
 
 "PFFFT":https://bitbucket.org/jpommier/pffft/src/master/README.md is a small, pretty fast FFT library with a BSD-like license.  This repository make that library available in browsers and Node.js by using "WebAssembly":https://webassembly.org. Two builds are provided a "SIMD":https://v8.dev/features/simd build and on without SIMD which is slower but compatible with more WebAssembly runtimes.
 
