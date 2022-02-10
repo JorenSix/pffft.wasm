@@ -37,7 +37,7 @@ pffft_simd().then(async function(Module) {
     dataHeap.set(new Uint8Array(audio_data.buffer));
 
     // Call function and get result
-    Module._pffft_runner_apply(pffft_runner,dataHeap.byteOffset);
+    Module._pffft_runner_transform(pffft_runner,dataHeap.byteOffset);
 
     var fft_result = new Float32Array(dataHeap.buffer, dataHeap.byteOffset, audio_data.length);
 
@@ -71,7 +71,7 @@ pffft_no_simd().then(async function(Module) {
     dataHeap.set(new Uint8Array(audio_data.buffer));
 
     // Call function and get result
-    Module._pffft_runner_apply(pffft_runner,dataHeap.byteOffset);
+    Module._pffft_runner_transform(pffft_runner,dataHeap.byteOffset);
 
     var fft_result = new Float32Array(dataHeap.buffer, dataHeap.byteOffset, audio_data.length);
 

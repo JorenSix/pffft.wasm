@@ -38,7 +38,7 @@
 		    dataHeap.set(new Uint8Array(audio_block.buffer));
 
 	   		// Window + forwar FFT for each block
-	    	Module._pffft_runner_apply(pffft_runner,dataHeap.byteOffset);
+	    	Module._pffft_runner_transform(pffft_runner,dataHeap.byteOffset);
 
 	    	var fft_result = new Float32Array(dataHeap.buffer, dataHeap.byteOffset, audio_block.length);
 

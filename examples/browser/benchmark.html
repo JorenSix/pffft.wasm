@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title></title>
-  <script src="/pffft/pffft.simd.js"></script>
+  <script src="pffft/pffft.simd.js"></script>
 
-  <script src="/pffft/pffft.js"></script>
+  <script src="pffft/pffft.js"></script>
 
   <script src="js/fft.js"></script>
-  <script src="/js/chart.js"></script>
+  <script src="js/chart.js"></script>
 
   <script type="text/javascript">
     var verbose = true;
@@ -39,7 +39,7 @@
         dataHeap.set(new Uint8Array(audio_data.buffer));
 
         // Call function and get result
-        pffft_module._pffft_runner_apply(pffft_runner,dataHeap.byteOffset);
+        pffft_module._pffft_runner_transform(pffft_runner,dataHeap.byteOffset);
 
         var fft_result = new Float32Array(dataHeap.buffer, dataHeap.byteOffset, audio_data.length);
       }
@@ -119,7 +119,7 @@
         dataHeap.set(new Uint8Array(audio_data.buffer));
 
         // Call function and get result
-        Module._pffft_runner_apply(pffft_runner,dataHeap.byteOffset);
+        Module._pffft_runner_transform(pffft_runner,dataHeap.byteOffset);
 
         var fft_result = new Float32Array(dataHeap.buffer, dataHeap.byteOffset, audio_data.length);
 

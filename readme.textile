@@ -1,37 +1,49 @@
-h1. PFFFT on WebAssembly
---------------------
+h1. PFFFT.WASM 
 
-"PFFFT":https://bitbucket.org/jpommier/pffft/src/master/README.md is a small, pretty fast FFT library with a BSD-like license.  This repository make that library available in "WebAssembly":https://webassembly.org projects. Two builds are provided a "SIMD":https://v8.dev/features/simd build and on without SIMD which is compatible with more WebAssembly runtimes.
+"PFFFT":https://bitbucket.org/jpommier/pffft/src/master/README.md is a small, pretty fast FFT library with a BSD-like license.  This repository make that library available in browsers and Node.js by using "WebAssembly":https://webassembly.org. Two builds are provided a "SIMD":https://v8.dev/features/simd build and on without SIMD which is slower but compatible with more WebAssembly runtimes.
 
+This repository contains
 
-h2. Why PFFFT on WebAssembly?
-
-PFFFT on WebAssembly provides a high  
-
-
-h2. Limitations
+* @build@ 
+* @examples@ 
+* @media@ a couple of screenshots 
+* @src@ 
 
 
-"CORS":https://en.wikipedia.org/wiki/Cross-origin_resource_sharing needs to be configured correctly on your web server to allow browsers to execute WebAssembly modules. A working configuration sets these headers: <tt>'Cross-Origin-Embedder-Policy' => 'require-corp'</tt> and <tt>'Cross-Origin-Opener-Policy' => 'same-origin'</tt>. This makes it less easy to install than pure 
+h2. Why PFFFT.WASM?
+
+PFFFT on WebAssembly provides a high performance, small FFT library which can be used in browsers or on Node.js. It is ideally suited for frequency analysis of a lot of audio in the browser. 
+
+This project also serves as way for me to learn about __SIMD and WebAssembly__. PFFFT.WASM is one of the more simple projects where SIMD makes an actual difference. See the benchmarks below for more info.
+
+
+!./media/stft.png(STFT canvas image)!
+<small>Fig: An STFT calculated with PFFFT.WASM</small>
+
 
 
 h2. Benchmark
 
-"FFT.js":https://github.com/auroranockert/fft.js 
-
+To see the difference between the SIMD version and the one without there is a benchmark example.  The pure Javascript FFT library "FFT.js":https://github.com/auroranockert/fft.js is used as a baseline.
 
 
 !./media/pffft_benchmark.png(PFFFT benchmark)!
+<small>Fig: benchmarks on an M1 Apple processor</small>
 
 
+h2. Limitations
 
+The wrapper __limits window sizes__ to 512 or 1024 samples and __applies a Hamming window__ automatically. If other window sizes or types are needed a change to the wrapper followed by recompilation is needed. Also, the audio samples are expected to be 32bit floats.
 
-!./media/stft.png(STFT canvas image)!
+To use WebAssembly modules in browsers "CORS":https://en.wikipedia.org/wiki/Cross-origin_resource_sharing needs to be configured correctly on your web server. A working configuration sets these headers: <tt>'Cross-Origin-Embedder-Policy' => 'require-corp'</tt> and <tt>'Cross-Origin-Opener-Policy' => 'same-origin'</tt>. This makes it less easy to install than pure javascript libraries. Pure javascript FFT libraries are already quite fast and sufficient for many applications, do consider these before trying PFFFT.WASM.  
 
+Evidently, to use the SIMD version a WebAssembly runtime is needed that supports these instructions.
 
 
 h2. Credits
 
 * "PFFFT":https://bitbucket.org/jpommier/pffft/src/default/  a pretty fast FFT library. BSD license
+* "Emscripten":https://emscripten.org/ compiles c code to WebAssembly.
+* "Chart.js":https://www.chartjs.org/ the charting library used for the benchmarking. 
 
-PFFFT on WebAssembly by Joren Six at IPEM, Ghent University.
+PFFFT.WASM by Joren Six at IPEM, Ghent University.
