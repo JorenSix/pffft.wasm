@@ -35,7 +35,7 @@ The benchmark makes the difference between the SIMD version of pffft.wasm and th
 
 h2. Limitations
 
-The wrapper __limits window sizes__ to 512 or 1024 samples and __applies a Hamming window__ automatically. If other window sizes or types are needed a change to the wrapper followed by recompilation is needed. Also, the time series samples are expected to be 32bit floats.
+The wrapper __limits window sizes__ powers of two between (inclusive) 32 and 4096 samples and __applies a Hamming window__ automatically. If other window sizes or types are needed a change to the wrapper followed by recompilation is needed. Also, the time series samples are expected to be 32bit floats.
 
 To use WebAssembly modules in browsers "CORS":https://en.wikipedia.org/wiki/Cross-origin_resource_sharing needs to be configured correctly on your web server. A working configuration sets these headers: <tt>'Cross-Origin-Embedder-Policy' => 'require-corp'</tt> and <tt>'Cross-Origin-Opener-Policy' => 'same-origin'</tt>. This makes it less easy to install than pure Javascript libraries. Pure Javascript FFT libraries are already quite fast and sufficient for many applications, do consider these before resorting to pffft.wasm.  
 
