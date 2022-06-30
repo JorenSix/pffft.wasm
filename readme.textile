@@ -27,7 +27,7 @@ This project also serves as way for me to learn about __SIMD and WebAssembly__. 
 
 h2. Benchmark
 
-The benchmark makes the difference between the SIMD version of pffft.wasm and the version withouth SIMD instructions clear. It is obvious that FFT analysis is a good fit for SIMD optimization.  The pure Javascript FFT library "FFT.js":https://github.com/auroranockert/fft.js is used as a baseline. Run the "pffft.wasm benchmark on your system":https://0110.be/l/pffft_benchmark  to see it in action.
+The benchmark makes the difference between the SIMD version of pffft.wasm and the version withouth SIMD instructions clear. It is obvious that FFT analysis is a good fit for SIMD optimization.  The pure Javascript FFT library "FFT.js":https://github.com/indutny/fft.js is used as a baseline. Run the "pffft.wasm benchmark on your system":https://0110.be/l/pffft_benchmark  to see it in action.
 
 !./media/pffft_benchmark.png(PFFFT benchmark)!
 <small>Fig: benchmarks on an Apple M1 Pro Chip.</small>
@@ -41,6 +41,7 @@ To use WebAssembly modules in browsers "CORS":https://en.wikipedia.org/wiki/Cros
 
 Evidently, a WebAssembly runtime with SIMD instruction support is needed to get the most performant version.
 
+"PulseFFT":https://github.com/AWSM-WASM/PulseFFT might be of interest as well: it is a (as far as I can tell non-SIMD) WASM version of KissFFT.
 
 h2. Credits
 
